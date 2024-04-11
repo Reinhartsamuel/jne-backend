@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+    }
+    match /users/{userId}/{documents=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId
+    }
+    
+    match /projects/{projectsId} {
+     allow read: if get(/databases/$(database)/documents/projects/$(projectsId)).data.owner == request.auth.uid
+     allow write: if get(/databases/$(database)/documents/projects/$(projectsId)).data.owner == request.auth.uid
+   }
+ 
+   
+   match /pages/{projectsId} {
+     allow read: if true
+     allow write: if get(/databases/$(database)/documents/projects/$(projectsId)).data.owner == request.auth.uid
+     allow write: if get(/databases/$(database)/documents/projects/$(projectsId)).data.admin == request.auth.uid
+     allow write: if get(/databases/$(database)/documents/projects/$(projectsId)).data.team == request.auth.uid 
+   }
+   
+   // these rules need more security
+    match /news/{newsId} {
+     allow read: if true
+     allow write: if true
+  }
+   match /menus/{menusId} {
+     allow read: if true
+     allow write: if request.auth != null 
+   }
+   
+  }
+}
